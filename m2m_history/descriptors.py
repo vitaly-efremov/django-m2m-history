@@ -2,22 +2,18 @@
 import django
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models.fields.related_descriptors import ManyToManyDescriptor, cached_property, \
+    create_forward_many_to_many_manager, router, signals
 from django.db.models import Q
 from django.utils import timezone
 
 from .models import ManyToManyHistoryVersion
 from .signals import m2m_history_changed
 
-try:
-    from django.db.models.fields.related_descriptors import ManyRelatedObjectsDescriptor, ReverseManyRelatedObjectsDescriptor, \
-        cached_property, create_many_related_manager, router, signals
-except ImportError:
-    from django.db.models.fields.related import ManyRelatedObjectsDescriptor, ReverseManyRelatedObjectsDescriptor, \
-        cached_property, create_many_related_manager, router, signals
 
 
 def create_many_related_history_manager(superclass, rel):
-    baseManagerClass = create_many_related_manager(superclass, rel)
+    baseManagerClass = create_forward_many_to_many_manager(superclass, rel)
 
     class ManyToManyHistoryThroughManager(baseManagerClass):
 
@@ -256,7 +252,7 @@ def create_many_related_history_manager(superclass, rel):
     return ManyToManyHistoryThroughManager
 
 
-class ReverseManyRelatedObjectsHistoryDescriptor(ReverseManyRelatedObjectsDescriptor):
+class ReverseManyRelatedObjectsHistoryDescriptor(ManyToManyDescriptor):
     @cached_property
     def related_manager_cls(self):
         """
@@ -284,7 +280,7 @@ class ReverseManyRelatedObjectsHistoryDescriptor(ReverseManyRelatedObjectsDescri
         manager.add(*value)
 
 
-class ManyRelatedObjectsHistoryDescriptor(ManyRelatedObjectsDescriptor):
+class ManyRelatedObjectsHistoryDescriptor(ManyToManyDescriptor):
     @cached_property
     def related_manager_cls(self):
         """
