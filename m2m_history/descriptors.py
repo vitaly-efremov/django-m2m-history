@@ -3,12 +3,17 @@ import django
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import Q
-from django.db.models.fields.related import ManyRelatedObjectsDescriptor, ReverseManyRelatedObjectsDescriptor, \
-    cached_property, create_many_related_manager, router, signals
 from django.utils import timezone
 
 from .models import ManyToManyHistoryVersion
 from .signals import m2m_history_changed
+
+try:
+    from django.db.models.fields.related_descriptors import ManyRelatedObjectsDescriptor, ReverseManyRelatedObjectsDescriptor, \
+        cached_property, create_many_related_manager, router, signals
+except ImportError:
+    from django.db.models.fields.related import ManyRelatedObjectsDescriptor, ReverseManyRelatedObjectsDescriptor, \
+        cached_property, create_many_related_manager, router, signals
 
 
 def create_many_related_history_manager(superclass, rel):
