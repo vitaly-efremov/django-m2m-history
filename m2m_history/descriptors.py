@@ -13,7 +13,7 @@ from .signals import m2m_history_changed
 
 
 def create_many_related_history_manager(superclass, rel):
-    baseManagerClass = create_forward_many_to_many_manager(superclass, rel)
+    baseManagerClass = create_forward_many_to_many_manager(superclass, rel, None)
 
     class ManyToManyHistoryThroughManager(baseManagerClass):
 

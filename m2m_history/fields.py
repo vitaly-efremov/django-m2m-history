@@ -28,7 +28,7 @@ class ManyToManyHistoryField(models.ManyToManyField):
         # wrong behaviour of south
 #        self.rel.through._meta.auto_created = False
 
-        setattr(cls, self.name, ReverseManyRelatedObjectsHistoryDescriptor(self))
+        setattr(cls, self.name, ReverseManyRelatedObjectsHistoryDescriptor(self.remote_field))
 
     def contribute_to_related_class(self, cls, related):
         '''
