@@ -12,8 +12,8 @@ from .signals import m2m_history_changed
 
 
 
-def create_many_related_history_manager(superclass, rel):
-    baseManagerClass = create_forward_many_to_many_manager(superclass, rel, None)
+def create_many_related_history_manager(superclass, rel, reverse):
+    baseManagerClass = create_forward_many_to_many_manager(superclass, rel, reverse)
 
     class ManyToManyHistoryThroughManager(baseManagerClass):
 
@@ -252,15 +252,17 @@ def create_many_related_history_manager(superclass, rel):
     return ManyToManyHistoryThroughManager
 
 
-class ReverseManyRelatedObjectsHistoryDescriptor(ManyToManyDescriptor):
+class ManyToManyHistoryDescriptor(ManyToManyDescriptor):
     @cached_property
     def related_manager_cls(self):
         """
         Difference from super method is return our own manager inherited from the build-in
         """
+        related_model = self.rel.related_model if self.reverse else self.rel.model
         return create_many_related_history_manager(
-            self.field.rel.to._default_manager.__class__,
-            self.field.rel
+            related_model._default_manager.__class__,
+            self.rel,
+            reverse=self.reverse,
         )
 
     def __set__(self, instance, value):
@@ -270,36 +272,8 @@ class ReverseManyRelatedObjectsHistoryDescriptor(ManyToManyDescriptor):
         if instance is None:
             raise AttributeError("Manager must be accessed via instance")
 
-        if not self.field.rel.through._meta.auto_created:
-            opts = self.field.rel.through._meta
-            raise AttributeError("Cannot set values on a ManyToManyField which specifies an intermediary model. "
-                                 "Use %s.%s's Manager instead." % (opts.app_label, opts.object_name))
-
-        manager = self.__get__(instance)
-        manager.clear(*value)
-        manager.add(*value)
-
-
-class ManyRelatedObjectsHistoryDescriptor(ManyToManyDescriptor):
-    @cached_property
-    def related_manager_cls(self):
-        """
-        Difference from super method is return our own manager inherited from the build-in
-        """
-        return create_many_related_history_manager(
-            self.related.model._default_manager.__class__,
-            self.related.field.rel
-        )
-
-    def __set__(self, instance, value):
-        """
-        Difference from super method is send value to `clear` method as well as to `add` method
-        """
-        if instance is None:
-            raise AttributeError("Manager must be accessed via instance")
-
-        if not self.related.field.rel.through._meta.auto_created:
-            opts = self.related.field.rel.through._meta
+        if not self.rel.field.rel.through._meta.auto_created:
+            opts = self.rel.field.rel.through._meta
             raise AttributeError("Cannot set values on a ManyToManyField which specifies an intermediary model. "
                                  "Use %s.%s's Manager instead." % (opts.app_label, opts.object_name))
 

@@ -1,7 +1,6 @@
 from django.db import models
 
-from .descriptors import (ManyRelatedObjectsHistoryDescriptor,
-                          ReverseManyRelatedObjectsHistoryDescriptor)
+from .descriptors import ManyToManyHistoryDescriptor
 
 __all__ = ['ManyToManyHistoryField']
 
@@ -12,7 +11,7 @@ class ManyToManyHistoryField(models.ManyToManyField):
         self.versions = kwargs.pop('versions', False)
         super(ManyToManyHistoryField, self).__init__(*args, **kwargs)
 
-    def contribute_to_class(self, cls, name):
+    def contribute_to_class(self, cls, name, **kwargs):
         '''
         Call super method and remove unique_together, add time fields and change descriptor class
         '''
@@ -28,7 +27,7 @@ class ManyToManyHistoryField(models.ManyToManyField):
         # wrong behaviour of south
 #        self.rel.through._meta.auto_created = False
 
-        setattr(cls, self.name, ReverseManyRelatedObjectsHistoryDescriptor(self.remote_field))
+        setattr(cls, self.name, ManyToManyHistoryDescriptor(self.remote_field, reverse=False))
 
     def contribute_to_related_class(self, cls, related):
         '''
@@ -38,7 +37,7 @@ class ManyToManyHistoryField(models.ManyToManyField):
 
         # `swapped` attribute is not present before Django 1.5
         if not self.rel.is_hidden() and not getattr(related.model._meta, 'swapped', None):
-            setattr(cls, related.get_accessor_name(), ManyRelatedObjectsHistoryDescriptor(related))
+            setattr(cls, related.get_accessor_name(), ManyToManyHistoryDescriptor(self.remote_field, reverse=True))
 
 #     def _get_m2m_db_table(self, opts):
 #         db_table = super(ManyToManyHistoryField, self)._get_m2m_db_table(opts)
