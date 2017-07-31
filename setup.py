@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='django-m2m-history',
-    version=0.3.3,
+    version='0.3.3',
     description='Django ManyToMany relation field with history of changes',
     long_description=open('README.md').read(),
     author='ramusus',
