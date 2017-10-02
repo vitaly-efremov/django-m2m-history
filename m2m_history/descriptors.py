@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from distutils.version import StrictVersion
+
 import django
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -240,7 +242,7 @@ def create_many_related_history_manager(superclass, rel, reverse):
             self.send_signal(source_field_name, 'post_clear', set(self.removed_at(self.get_time(), only_pk=True)))
 
         # compatibility with Django 1.7
-        if django.get_version() >= 1.7:
+        if StrictVersion(django.get_version()) >= StrictVersion('1.7'):
 
             @property
             def _fk_val(self):
