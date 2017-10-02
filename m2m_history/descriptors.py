@@ -52,7 +52,7 @@ def create_many_related_history_manager(superclass, rel, reverse):
             if not only_pk:
                 if unique is False:
                     raise ValueError("Argument `unique` should be True if argument only_pk is False")
-                if django.get_version() >= 1.7:
+                if StrictVersion(django.get_version()) >= StrictVersion('1.7'):
                     qs = super(ManyToManyHistoryThroughManager, self).get_queryset().using(
                         self.db).filter(pk__in=qs)
                 else:
